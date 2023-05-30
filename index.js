@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 require('dotenv').config()
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 // middle ware 
@@ -31,10 +31,34 @@ async function run() {
 
         const menuCollection = client.db("BistroDb").collection("menu");
         const cartCollection = client.db("BistroDb").collection("carts");
+        const userCollection = client.db("BistroDb").collection("users");
 
         app.get("/menu", async (req, res) => {
 
             const result = await menuCollection.find().toArray();
+            res.send(result)
+        })
+
+
+    // users apis
+    
+    app.post("/users", async(req,res)=>{
+
+        const data = req.body;
+        console.log(data)
+        const result= await userCollection.insertOne(data);
+        res.send(result)
+     })
+
+        // get cart data 
+        app.get("/carts", async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            if (!email) {
+                res.send([])
+            }
+
+            const result = await cartCollection.find(query).toArray()
             res.send(result)
         })
 
@@ -47,6 +71,13 @@ async function run() {
             res.send(result)
         })
 
+        // delete 
+        app.delete("/del/:id",async(req,res)=>{
+            const id = req.params.id;
+            const query={_id : new ObjectId(id)}
+            const result= await cartCollection.deleteOne(query);
+            res.send(result)
+        })
 
 
 
