@@ -40,15 +40,32 @@ async function run() {
         })
 
 
-    // users apis
-    
-    app.post("/users", async(req,res)=>{
+        // users apis
 
-        const data = req.body;
-        console.log(data)
-        const result= await userCollection.insertOne(data);
-        res.send(result)
-     })
+
+        app.get('/users', async (req, res) => {
+            const result = await userCollection.find().toArray()
+            res.send(result)
+        })
+
+        app.post("/users", async (req, res) => {
+
+            const data = req.body;
+            const existingEmail = data.email;
+            // console.log(existingEmail)
+            const query = { email: existingEmail }
+            const existingUser = await userCollection.findOne(query);
+
+            if (existingUser) {
+                return res.send({ message: "User Already Existing" });
+                // console.log(existingUser)
+            }
+
+           else{
+            const result = await userCollection.insertOne(data);
+            res.send(result)
+           }
+        })
 
         // get cart data 
         app.get("/carts", async (req, res) => {
@@ -72,10 +89,10 @@ async function run() {
         })
 
         // delete 
-        app.delete("/del/:id",async(req,res)=>{
+        app.delete("/del/:id", async (req, res) => {
             const id = req.params.id;
-            const query={_id : new ObjectId(id)}
-            const result= await cartCollection.deleteOne(query);
+            const query = { _id: new ObjectId(id) }
+            const result = await cartCollection.deleteOne(query);
             res.send(result)
         })
 
